@@ -1,4 +1,6 @@
 let board = document.getElementById("board")
+let square;
+let movePiece;
 
 class Piece{
     constructor(){
@@ -10,7 +12,22 @@ class Piece{
         this.possibleMoves = [];
     }
 
-    makeMove(){}
+    makeMove(move){
+        this.move = ""
+        this.move = move
+        if (this.possibleMoves.includes(this.move.tile)){
+            console.log(this.image)
+            console.log(this.move.tile)
+            this.move.tile.innerHTML = "<img src = \"" + this.image + "\">"
+            this.possibleMoves = []
+            for(let j = 0; j < 8; j++){
+                    for (let n = 0; n < 8; n++){
+                        map[j][n].tile.removeEventListener("click", movePiece)
+                    }
+                }
+            }
+        this.displayMoves();
+    }
 
     verifyMove(){}
 
@@ -47,27 +64,20 @@ class Pawn extends Piece{
         this.color = color;
         this.hasmoved = false;
         if(this.color == "white"){
-            this.image = "whitePawn"
+            this.image = "whitePawn.png"
         } else{
-            this.image = "blackPawn"
+            this.image = "blackPawn.png"
         }
     }
-    
-    makeMove(move){
-        console.log(move)
-        this.move = move
-        if (this.possibleMoves.includes(move)){
-            map[this.y][this.x].backgroundImage = this.image
-        } else{
-        }
-    }
+
 
     verifyMove(){
         this.possibleMoves = []
         if (this.color == "white"){
-            if (this.hasmoved == false && map[this.y-2][this.x].hasPiece == false){
-                this.possibleMoves.push(map[this.y - 2][this.x].tile)
-            }
+            try{
+                if (this.hasmoved == false && map[this.y-2][this.x].hasPiece == false){
+                    this.possibleMoves.push(map[this.y - 2][this.x].tile)
+                }} catch {}
             if (map[this.y - 1][this.x + 1].hasPiece == true){
                 this.possibleMoves.push(map[this.y - 1][this.x + 1].tile)
             }
@@ -276,14 +286,14 @@ function createMap(){
                 nodes[i][j].tile.style.height = "80px"; 
                 nodes[i][j].tile.style.border = "3px solid black";
                  nodes[i][j].tile.style.backgroundColor = "tan";
-                row.appendChild(nodes[i][j].tile)
+                row.appendChild(nodes[i][j].tile);
                 x++;
                 j++;
                 nodes[i].push(new Node([y, x], document.createElement("td")));
                 nodes[i][j].tile.style.width = "80px";
                 nodes[i][j].tile.style.height = "80px"  ;
                 nodes[i][j].tile.style.border = "3px solid black";
-                row.appendChild(nodes[i][j].tile)
+                row.appendChild(nodes[i][j].tile);
                 x++;
             }
         x = 0;
@@ -296,26 +306,53 @@ function createMap(){
 function resetBoard(){
     console.log("ran")
     for (let i = 0; i < 8; i++){
-        map[6][i].piece = new Pawn(6, i, "white")
-        map[6][i].piece.displayPiece()
-        map[6][i].tile.addEventListener("click", function(){
-            map[6][i].piece.verifyMove(5)
+        let cur = map[6][i];
+        cur.piece = new Pawn(6, i, "white");
+        cur.piece.displayPiece();
+        cur.tile.addEventListener("click", function(){
+            cur.piece.verifyMove()
             for(let j = 0; j < 8; j++){
                 for (let n = 0; n < 8; n++){
-                    map[j][n].tile.addEventListener("click", function(){
-                        console.log("thing")
-                        map[6][i].piece.makeMove(map[i][n].tile)
-                    })
+                    square = map[j][n]
+                    square.tile.addEventListener("click", movePiece)
                 }
             }
         }) 
     }
     for (let i = 0; i < 8; i++){
-        map[1][i].piece = new Pawn(1, i, "black")
-        map[1][i].piece.displayPiece()
-        map[1][i].tile.addEventListener("click", function(){map[1][i].piece.verifyMove(5)}) 
+        let cur = map[1][i];
+        cur.piece = new Pawn(1, i, "black");
+        cur.piece.displayPiece();
+
+
+        cur.tile.addEventListener("click", function(){
+            cur.piece.verifyMove();
+            for(let j = 0; j < 8; j++){
+                    for (let n = 0; n < 8; n++){
+
+                        square = map[j][n]
+
+                        movePiece = function wahhh(){
+                            cur.tile.innerHTML = ""; 
+                            cur.piece.makeMove(square.tile); 
+                            for(let j = 0; j < 8; j++){
+                                for (let n = 0; n < 8; n++){
+                                    map[j][n].tile.removeEventListener("click", movePiece)
+                                }
+                            }
+                        }
+
+                        square.tile.addEventListener("click", movePiece)
+
+                        }
+                    }
+                });
+        
     }
 }
+
+
+
 
 let map = createMap()
 console.log(map)
