@@ -1,32 +1,37 @@
 let board = document.getElementById("board")
 let square;
 let movePiece;
+let alivePieces = [];
 
 class Piece{
-    constructor(){
+    constructor(y, x, color, node){
         this.x;
         this.y;
         this.captured = false;
         this.color;
         this.move;
         this.possibleMoves = [];
+        this.node;
+        this.tile;
+        this.change = [];
     }
 
     makeMove(move){
-        this.move = ""
+        this.tile.innerHTML = "";
         this.move = move
-        if (this.possibleMoves.includes(this.move.tile)){
-            console.log(this.image)
-            console.log(this.move.tile)
-            this.move.tile.innerHTML = "<img src = \"" + this.image + "\">"
-            this.possibleMoves = []
-            for(let j = 0; j < 8; j++){
-                    for (let n = 0; n < 8; n++){
-                        map[j][n].tile.removeEventListener("click", movePiece)
-                    }
-                }
-            }
+        console.log(move)
+        this.move.innerHTML = "<img src = \"" + this.image + "\">"
+        this.node.coords[0] += this.change[this.possibleMoves.indexOf(move)][0]
+        this.node.coords[1] += this.change[this.possibleMoves.indexOf(move)][1]
+        this.possibleMoves = []
         this.displayMoves();
+        this.tile = move
+        console.log(this.node)
+        this.y = this.node.coords[0]
+        this.x = this.node.coords[1]
+        setMoves()
+        this.move = ""
+        this.hasmoved = true
     }
 
     verifyMove(){}
@@ -57,11 +62,13 @@ class Piece{
 }
 
 class Pawn extends Piece{
-    constructor(y, x, color){
+    constructor(y, x, color, node){
         super()
         this.x = x;
         this.y = y;
         this.color = color;
+        this.node = node
+        this.tile = node.tile
         this.hasmoved = false;
         if(this.color == "white"){
             this.image = "whitePawn.png"
@@ -72,35 +79,65 @@ class Pawn extends Piece{
 
 
     verifyMove(){
+        this.change = []
         this.possibleMoves = []
         if (this.color == "white"){
             try{
                 if (this.hasmoved == false && map[this.y-2][this.x].hasPiece == false){
                     this.possibleMoves.push(map[this.y - 2][this.x].tile)
-                }} catch {}
-            if (map[this.y - 1][this.x + 1].hasPiece == true){
-                this.possibleMoves.push(map[this.y - 1][this.x + 1].tile)
-            }
-            if (map[this.y - 1][this.x - 1].hasPiece == true){
-                this.possibleMoves.push(map[this.y - 1][this.x - 1].tile)
-            }
-            if (map[this.y - 1][this.x].hasPiece == false){
-                this.possibleMoves.push(map[this.y - 1][this.x].tile)
-            }
+                    this.change.push([-2, 0])
+                }} 
+            catch {}
+
+            try{
+                if (map[this.y - 1][this.x + 1].hasPiece == true){
+                    this.possibleMoves.push(map[this.y - 1][this.x + 1].tile)
+                    this.change.push([-1, 1])
+                }}
+            catch{}
+
+            try{
+                if (map[this.y - 1][this.x - 1].hasPiece == true){
+                    this.possibleMoves.push(map[this.y - 1][this.x - 1].tile)
+                    this.change.push([-1, -1])
+                }}
+            catch{}
+
+            try{
+                if (map[this.y - 1][this.x].hasPiece == false){
+                    this.possibleMoves.push(map[this.y - 1][this.x].tile)
+                    this.change.push([-1, 0])
+                }}
+            catch{}
         }
         else{
-            if (this.hasmoved == false && map[this.y + 2][this.x].hasPiece == false){
-                this.possibleMoves.push(map[this.y + 2][this.x].tile)
-            }
-            if (map[this.y + 1][this.x + 1].hasPiece == true){
-                this.possibleMoves.push(map[this.y + 1][this.x + 1].tile)
-            }
-            if (map[this.y + 1][this.x - 1].hasPiece == true){
-                this.possibleMoves.push(map[this.y + 1][this.x - 1].tile)
-            }
-            if (map[this.y + 1][this.x].hasPiece == false){
-                this.possibleMoves.push(map[this.y + 1][this.x].tile)
-            }
+            try{
+                if (this.hasmoved == false && map[this.y + 2][this.x].hasPiece == false){
+                    this.possibleMoves.push(map[this.y + 2][this.x].tile)
+                    this.change.push([2, 0])
+                }}
+            catch{}
+            
+            try{
+                if (map[this.y + 1][this.x + 1].hasPiece == true){
+                    this.possibleMoves.push(map[this.y + 1][this.x + 1].tile)
+                    this.change.push([1, 1])
+                }}
+            catch{}
+
+            try{
+                if (map[this.y + 1][this.x - 1].hasPiece == true){
+                    this.possibleMoves.push(map[this.y + 1][this.x - 1].tile)
+                    this.change.push([1, -1])
+                }}
+            catch{}
+
+            try{
+                if (map[this.y + 1][this.x].hasPiece == false){
+                    this.possibleMoves.push(map[this.y + 1][this.x].tile)
+                    this.change.push([1, 0])
+                }}
+            catch{}
         }
         this.displayMoves()
     }
@@ -244,12 +281,6 @@ class Node{
     }
 }
 
-class Map{
-    constructor(){
-
-    }
-}
-
 
 
 
@@ -304,56 +335,48 @@ function createMap(){
 }
 
 function resetBoard(){
-    console.log("ran")
+    alivePieces = []
     for (let i = 0; i < 8; i++){
         let cur = map[6][i];
-        cur.piece = new Pawn(6, i, "white");
+        cur.piece = new Pawn(6, i, "white", map[6][i]);
+        alivePieces.push(cur.piece)
         cur.piece.displayPiece();
-        cur.tile.addEventListener("click", function(){
-            cur.piece.verifyMove()
-            for(let j = 0; j < 8; j++){
-                for (let n = 0; n < 8; n++){
-                    square = map[j][n]
-                    square.tile.addEventListener("click", movePiece)
-                }
-            }
-        }) 
     }
     for (let i = 0; i < 8; i++){
         let cur = map[1][i];
-        cur.piece = new Pawn(1, i, "black");
-        cur.piece.displayPiece();
+        cur.piece = new Pawn(1, i, "black", map[1][i]);
+        alivePieces.push(cur.piece)
+        cur.piece.displayPiece();  
+    }
+
+    setMoves()
+}
+
+function setMoves(){
+    console.log(alivePieces)
+    for (let i = 0; i < alivePieces.length; i++){
+        let curPiece = alivePieces[i];
+        curPiece.tile.addEventListener("click", ver);
+        function ver(){
+            curPiece.verifyMove();
+            for (let j = 0; j < curPiece.possibleMoves.length; j++){
+                curPiece.possibleMoves[j].addEventListener("click", movePiece); 
 
 
-        cur.tile.addEventListener("click", function(){
-            cur.piece.verifyMove();
-            for(let j = 0; j < 8; j++){
-                    for (let n = 0; n < 8; n++){
-
-                        square = map[j][n]
-
-                        movePiece = function wahhh(){
-                            cur.tile.innerHTML = ""; 
-                            cur.piece.makeMove(square.tile); 
-                            for(let j = 0; j < 8; j++){
-                                for (let n = 0; n < 8; n++){
-                                    map[j][n].tile.removeEventListener("click", movePiece)
-                                }
-                            }
-                        }
-
-                        square.tile.addEventListener("click", movePiece)
-
-                        }
+                function movePiece(){
+                    for (let j = 0; j < curPiece.possibleMoves.length; j++){
+                        curPiece.possibleMoves[j].removeEventListener("click", movePiece)
                     }
-                });
+
+                    curPiece.tile.removeEventListener("click", ver)
+
+                    curPiece.makeMove(curPiece.possibleMoves[j]);
+                }  
+            }   
+        }
         
     }
 }
 
-
-
-
-let map = createMap()
-console.log(map)
-resetBoard()
+let map = createMap();
+resetBoard();
